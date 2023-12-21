@@ -1,0 +1,72 @@
+:root {
+	--primary-background: white;
+}
+/* Event Listing Grid (Field Component) */
+figure.event-grid-image {
+    position:relative;
+    overflow:hidden;
+    background-color:lightgray;
+    aspect-ratio:1;
+	text-align:center;
+}
+figure.event-grid-image img {
+	/* Style alt text for events without an image */
+	text-align:center;
+	font-size:1.5rem;
+	font-family:fantasy;
+	font-weight:bold;
+	font-style:italic;
+	color:#666;
+}
+figure.event-grid-image .event-image-container {
+    aspect-ratio:1;
+}
+figure.event-grid-image time, figure.event-grid-image .event-info {
+    transition:all .3s;
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:-.25rem;
+}
+figure.event-grid-image .event-info {
+    bottom:-90%;
+}
+figure.event-grid-image:hover time,
+a:focus figure.event-grid-image time {
+    bottom:auto;
+    bottom:90%;
+}
+figure.event-grid-image:hover .event-info,
+a:focus figure.event-grid-image .event-info {
+    bottom:auto;
+    bottom:0;
+    background-color:rgba(255,255,255,.95);
+    background-color: var(--primary-background);
+}
+figure.event-grid-image:hover time small,
+a:focus figure.event-grid-image time small {
+    border:1px solid rgba(0,0,0,.15);
+    padding:.125rem .75rem .25rem;
+    border-radius:.5rem;
+    box-shadow: 0 5px 5px 0 rgba(0,0,0,.2);
+}
+figure.event-grid-image time small {
+    background-color: var(--primary-background);
+    border-radius:.75rem .75rem 0 0;
+    padding:.125rem .75rem 0;
+}
+figure.event-grid-image .event-info .badge {
+    /* padding-top:.65rem; */
+    font-size:.8rem;
+    font-weight:600;
+    margin-top:.35rem;
+}
+figure.event-grid-image .event-footer {
+    margin-top:.8rem;
+    padding-bottom:.5rem;
+    text-align:right;
+    overflow:auto;
+}
+.event-grid > a:active .event-info p {
+    background-color:var(--warning);
+}
