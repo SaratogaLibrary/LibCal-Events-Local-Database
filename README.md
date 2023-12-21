@@ -9,7 +9,9 @@ This solution is designed to use PHP and SQLite. There are no external dependenc
 
 ### Configuration
 
-There is an `example.config.php` file in the root folder of this project. This should be renamed to `config.php` and the values therein should be customized for your use. The majority of this repository is primarily just a massive example of how one might use the LibCal API to enable access to one's own data that would otherwise be inaccessible except via the vendor's direct web interface and domain.
+Copy this repository to a web server location that supports PHP. There is an `example.config.php` file in the root folder of this project; this should be renamed to `config.php` and the values therein should be customized for your use. Once complete, visit the root folder's `index.php` file to prime the SQLite database file.
+
+The majority of this repository is primarily just a massive example of how one might use the LibCal API to enable access to one's own data that would otherwise be inaccessible except via the vendor's direct web interface and domain.
 
 ```php
 <?php
