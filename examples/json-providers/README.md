@@ -43,6 +43,13 @@ For *Event* types, the following options are also available:
   - A comma delimited list of either category IDs (the ID as provided via LibCal's administrative interface), or the name of the category (it must match fairly closely)
     Example: `?categories=summer+reading,book+group,cooking` or `?categories=2376,89165,114`
 
+- Images
+
+  > Limit the returned results to only those that have an associated image
+
+  - Provide this parameter (with or without any value at all) and it will prevent events that do not have an associated image from being returned
+    Example: `?images` or `?images=1` or `?images=false`
+
 - All
 
   > Return events from both public *and private* calendars

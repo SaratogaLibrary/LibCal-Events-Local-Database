@@ -2,7 +2,7 @@
 	require_once('../../config.php');
 	date_default_timezone_set($timezone_str);
 	#$event = file_get_contents(CONTENT_URL . 'examples/random-event/custom_json_provider.php');
-	$events = file_get_contents(CONTENT_URL . 'examples/json-providers/events.php');
+	$events = file_get_contents(CONTENT_URL . 'examples/json-providers/events.php?images=1');
 
 	// Attempt to reload the page if unable to fetch live JSON content
 	if ($events === false) {
@@ -48,7 +48,7 @@
 	<script src="./js/fitty.min.js"></script>
 </head>
 <body>
-<header>
+<header style="background-color:<?= BRAND_COLOR ?>;">
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col">
@@ -71,7 +71,7 @@
 						<td><div class="descriptors">
 			<?php
 				$cats = [];
-				foreach (explode(', ', $event['audience']) as $category) {
+				foreach (explode(DB_STRING_DELIMITER, $event['audience']) as $category) {
 					$pos = strpos($category, '>');
 					if ($pos !== false) { $pos += 2; }
 					$cats[] = trim(substr($category, $pos));
@@ -84,7 +84,7 @@
 							<div class="category_wrapper" style="background-color:<?= $event['color'] ?>;"><span class="category">
 			<?php
 				$cats = [];
-				foreach (explode(', ', $event['category']) as $category) {
+				foreach (explode(DB_STRING_DELIMITER, $event['category']) as $category) {
 					$pos = strpos($category, '>');
 					if ($pos !== false) { $pos += 2; }
 					$cats[] = trim(substr($category, $pos));
@@ -109,8 +109,8 @@
 		</div>
 	</div>
 </div>
-<footer id="footer">
-	<div id="svg-logo"><?php include('./images/logo-sspl_circle_text.svg'); ?></div>
+<footer id="footer" style="background-color:<?= BRAND_COLOR ?>;">
+	<div id="svg-logo"><img src="<?= IMAGE_LOC ?>" /></div>
 	<div id="qrcode"><?= $event['seats'] ? '<p>Sign up is required.<br />Visit our online calendar or scan this QRCode:</p>' : '' ?></div>
 </footer>
 <?php if ($event['seats']): ?>

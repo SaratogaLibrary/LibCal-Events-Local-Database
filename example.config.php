@@ -19,3 +19,5 @@ const PDO_OPTIONS         = [PDO::ATTR_TIMEOUT => 0, PDO::ATTR_ERRMODE => PDO::E
 
 // For demonstration of the examples:
 const CONTENT_URL         = 'https://example.com/libcal/';
+const IMAGE_LOC           = CONTENT_URL . 'examples/library-svgrepo-com.svg';
+const BRAND_COLOR         = 'gray';

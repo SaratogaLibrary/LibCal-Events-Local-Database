@@ -122,13 +122,16 @@ CREATE TABLE equipment (
 	location_name        TEXT NOT NULL,
 	category_name        TEXT NOT NULL,
 	item_name            TEXT NOT NULL,
-	from_date            TEXT NOT NULL,
-	to_date              TEXT NOT NULL,
-	created              TEXT NOT NULL,
+	from_date            INTEGER NOT NULL,
+	to_date              INTEGER NOT NULL,
+	created              INTEGER NOT NULL,
 	firstName            TEXT,
 	lastName             TEXT,
 	email                TEXT,
 	account              TEXT,
-	status               TEXT
+	status               TEXT,
+	barcode              INTEGER,
+	event_id             INTEGER,
+	event_title          TEXT
 );
 */

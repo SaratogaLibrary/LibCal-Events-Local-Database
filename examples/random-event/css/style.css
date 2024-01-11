@@ -19,7 +19,7 @@ footer {
 }
 header { height:150px; max-height:150px; overflow:hidden; }
 header, footer {
-	color:rgba(255,255,255,1); text-shadow:.125em .125em .125em rgba(0,0,0,.4); background-color:#649A44;
+	color:rgba(255,255,255,1); text-shadow:.125em .125em .125em rgba(0,0,0,.4);
 }
 /*html, body {
 	height:100%;
@@ -126,22 +126,10 @@ p:last-child { margin-bottom:0; }
 
 /* Logo Styles */
 #svg-logo {
-	display:inline-block;
 	max-width:125px;
 	max-height:125px;
 }
-#sspl_circle {
+#svg-logo > img {
 	width:125px;
-}
-#sspl-circle-logo {
-	mask: url(#logo-mask);
-}
-#mask-BookPages {
-	opacity:1;
-}
-#InnerCircle, #OuterCircle {
-	fill:#FFF;
-}
-#RDot, #LDot, #text-saratoga_springs, #text-public_library {
-	fill:#FFF;
+	height:auto;
 }
