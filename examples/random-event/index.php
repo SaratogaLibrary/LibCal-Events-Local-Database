@@ -116,7 +116,7 @@
 <?php if ($event['seats']): ?>
 <script>
 	var qr3 = new VanillaQR({
-		url: "https://sspl.libcal.com/event/<?= $event['id'] ?>",
+		url: "<?= $cal_prefix ?>event/<?= $event['id'] ?>",
 		width: 100,
 		height: 100,
 		colorLight: "#EEE",

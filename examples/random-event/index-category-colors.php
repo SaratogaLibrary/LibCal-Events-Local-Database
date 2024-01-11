@@ -1,7 +1,37 @@
 <?php
 	require_once('../../config.php');
 	date_default_timezone_set($timezone_str);
-	$event = json_decode(file_get_contents(CONTENT_URL . 'examples/random-event/custom_json_provider.php'), true);
+	$events = file_get_contents(CONTENT_URL . 'examples/json-providers/events.php?images=1');
+
+	// Attempt to reload the page if unable to fetch live JSON content
+	if ($events === false) {
+		header('Refresh:1; url=' . $_SERVER['REQUEST_URI']);
+		exit();
+	}
+
+	$events = json_decode($events, true);
+	$events = $events['events'];
+
+	// Don't display/advertise events that require registration and are already full
+	foreach ($events as $index => $event) {
+		if ($event['seats'] == null) continue;
+		if ($event['seats_taken'] == $event['seats']) {
+			unset($events[$index]);
+		}
+	}
+	// Reset the array keys
+	$events = array_values($events);
+
+	// Display a random event
+	$rand = rand(0, (count($events)-1));
+
+	$event = $events[$rand];
+
+	// Check to verify that the event/content contains data, and reload if not
+	if (!isset($event['title']) || empty($event['title'])) {
+		header('Refresh:1; url=' . $_PHP['REQUEST_URI']);
+		exit();
+	}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,13 +75,13 @@
 	</div>
 </div>
 <footer id="footer">
-	<div><?php include('./images/logo-sspl_circle_text.svg'); ?></div>
+	<div id="svg-logo"><img src="<?= IMAGE_LOC ?>" /></div>
 	<div class="targetmarket">
 		Intended Audiences
 		<p class="descriptors">
 <?php
 	$cats = [];
-	foreach (explode(', ', $event['audience']) as $category) {
+	foreach (explode(DB_STRING_DELIMITER, $event['audience']) as $category) {
 		$pos = strpos($category, '>');
 		if ($pos !== false) { $pos += 2; }
 		$cats[] = trim(substr($category, $pos));
@@ -63,7 +93,7 @@
 		<p class="descriptors">
 <?php
 	$cats = [];
-	foreach (explode(', ', $event['category']) as $category) {
+	foreach (explode(DB_STRING_DELIMITER, $event['category']) as $category) {
 		$pos = strpos($category, '>');
 		if ($pos !== false) { $pos += 2; }
 		$cats[] = trim(substr($category, $pos));
@@ -77,7 +107,7 @@
 <?php if ($event['seats']): ?>
 <script>
 	var qr3 = new VanillaQR({
-		url: "https://sspl.libcal.com/event/<?= $event['id'] ?>",
+		url: "<?= $cal_prefix ?>event/<?= $event['id'] ?>",
 		width: 100,
 		height: 100,
 		colorLight: "#EEE",
