@@ -1,5 +1,6 @@
 :root {
-	--primary-background: white;
+    --primary-background: white;
+    --warning: #e2bf27;
 }
 /* Event Listing Grid (Field Component) */
 figure.event-grid-image {
@@ -7,7 +8,7 @@ figure.event-grid-image {
     overflow:hidden;
     background-color:lightgray;
     aspect-ratio:1;
-	text-align:center;
+    text-align:center;
 }
 figure.event-grid-image img {
 	/* Style alt text for events without an image */
@@ -49,6 +50,12 @@ a:focus figure.event-grid-image time small {
     padding:.125rem .75rem .25rem;
     border-radius:.5rem;
     box-shadow: 0 5px 5px 0 rgba(0,0,0,.2);
+}
+figure.event-grid-image img {
+    transition:all .3s ease-in-out;
+}
+figure.event-grid-image:hover img {
+    filter:brightness(.5);
 }
 figure.event-grid-image time small {
     background-color: var(--primary-background);
