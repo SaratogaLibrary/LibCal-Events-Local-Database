@@ -1,4 +1,4 @@
-# Hover-Style Event Cards
+# Custom Event Brochure Generator
 
 mPDF is a PHP library used in the generation of PDFs. This project uses an ever-so-slightly modified version of that library to generate a PDF brochure of
 library events, customized to the interests of your patrons. A date range can be chosen (default is set to the current week), and it can also be filtered
