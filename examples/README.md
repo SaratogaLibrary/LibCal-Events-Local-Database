@@ -8,6 +8,10 @@ To get some creative ideas started, here are a few projects that can take advant
    This project shows how simple data can be retrieved, and then displayed in a custom layout. Some level of data massaging and filtering is used, but it's not too crazy.
 3. [Hover-Style Cards](hover-cards/) (Widget?)
    This project showcases how one might be able to pull data from the database (via the JSON Providers), and then embed some customized, and nicely laid out event widgets onto their own website's content area. You have full control over the templates that can be created and rendered. All you need is the data, and the rest is totally under your control! This example aims to show that possibility.
+4. [Brochure Generator](brochure/)
+   This project offers your patrons a way to generate an event brochure that is customized to their preferences based on available attributes from your
+   event calendar's data. This could be the audience type, category of event, or location (space). These are, by default, the provided attributes that
+   can be filtered, but this can fairly easily be extended to consider other attributes as found in the SQLite database that this project creates.
 
 ## Contributing
 
