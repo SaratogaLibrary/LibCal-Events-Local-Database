@@ -12,7 +12,9 @@ $default_settings = [
 ];
 $truncate_options = [
 	'maxLength' => 170,
-	'keepTags' => '<em><i><strong><b>'
+	'keepTags' => '<br>' // HTML tags to allow through the truncation;
+	                     // allowing any tags that might end up getting cut off could corrupt the rendering without
+						 // something like HTMLPurifier [http://htmlpurifier.org/] processing the output later on
 ];
 
 function eventTitle($listing, $type = 'event') {
@@ -28,7 +30,7 @@ function eventTitle($listing, $type = 'event') {
 		$hybrid = ($online && $listing->location);
 		$time = $listing->allday ? 'All Day' : date('g:i a', $listing->start) . '-' . date('g:i a', $listing->end);
 		$listing->location = ($listing->cat_id == 42786) ? '' : $listing->location;
-		$summary = strip_tags($listing->description, '<p><br><ul><ol><li>');
+		$summary = strip_tags($listing->description, '<br>');
 	}
 	// TODO: Handle multi-date event listings (check for appropriate end time; ex: not all-day?)
 	$date = (date('Ymd') > date('Ymd', $listing->start)) ? date('l, F j') : date('l, F j', $listing->start);
