@@ -13,8 +13,8 @@ $default_settings = [
 $truncate_options = [
 	'maxLength' => 170,
 	'keepTags' => '<br>' // HTML tags to allow through the truncation;
-                         // allowing any tags that might end up getting cut off could corrupt the rendering without
-                         // something like HTMLPurifier [http://htmlpurifier.org/] processing the output later on
+	                     // allowing any tags that might end up getting cut off could corrupt the rendering without
+						 // something like HTMLPurifier [http://htmlpurifier.org/] processing the output later on
 ];
 
 function eventTitle($listing, $type = 'event') {
