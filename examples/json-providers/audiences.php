@@ -3,7 +3,7 @@
 require_once('../../config.php');
 
 function getAudiences() {
-	// the API doesn't have a way to query for audiences...
+	// the API doesn't have a way to query for all audiences... Manually add your own audiences and IDs as a fallback
 	return [
 		1623 => 'Adults',
 		1628 => 'All Ages',

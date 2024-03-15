@@ -3,7 +3,7 @@
 require_once('../../config.php');
 
 function getCategories() {
-	// the API doesn't have a way to query for categories...
+	// the API doesn't have a way to query for all categories... Manually add your own categories and IDs as a fallback
 	return [
 		59573 => 'Art, Music, and Movies',
 		64132 => 'Art, Music, and Movies > Crafting',
