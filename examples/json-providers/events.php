@@ -44,16 +44,15 @@
 		return $date;
 	}
 
-	function getEvents($days = 1, $all_events = false, $categories = array(), $audience = array(), $start = null, $end = null, $images = null) {
+	function getEvents($days = 1, $all_events = false, $categories = array(), $audience = array(), $start = null, $end = null) {
 		array_walk($audience,   'prepareAudience');
 		array_walk($categories, 'prepareCategories');
 		$internal = !$all_events ? ' AND events.private != 1 ' : '';
 		$auds     = count($audience)   ? ' AND '.implode(' OR ', $audience)   : '';
 		$cats     = count($categories) ? ' AND '.implode(' OR ', $categories) : '';
-		$images   = $images === true ? ' AND `image` IS NOT NULL ' : '';
 
 		// Default query if no $start or $end
-		$query = 'SELECT * FROM events WHERE events.start < "'.(strtotime('+'.$days.' days 00:00:00')-1).'" '. $internal . $cats . $auds . $images . ' ORDER BY events.start ASC, events.title ASC';
+		$query = 'SELECT * FROM events WHERE events.start < "'.(strtotime('+'.$days.' days 00:00:00')-1).'" '. $internal . $cats . $auds . ' ORDER BY events.start ASC, events.title ASC';
 		if (isset($start) && isset($end)) {
 			// Base the timeframe on $start and either $days or $end, depending
 			$days_calc = $days - 1;
@@ -91,7 +90,7 @@
 	function getMeetings($days = 1) {
 		try {
 			//open the database
-			$db = new PDO('sqlite:db.sqlite3');
+			$db = new PDO('sqlite:' . DATABASE_FILE);
 			$result = $db->query('SELECT * FROM bookings WHERE bookings.account != "admin" AND bookings.start BETWEEN "'.strtotime('00:00:00').'" AND "'.(strtotime('+'.$days.' days 00:00:00')-1).'" AND bookings.status LIKE "%Approved%" ORDER BY bookings.start ASC, bookings.title ASC')->fetchAll(PDO::FETCH_ASSOC);
 
 			// close the database connection
@@ -109,12 +108,12 @@
 	function getSpaceSchedule($space_id, $days = 1) {
 		try {
 			//open the database
-			$db = new PDO('sqlite:db.sqlite3');
+			$db = new PDO('sqlite:' . DATABASE_FILE);
 
 			$space = $db->query("SELECT * from spaces where id = {$space_id}")->fetchAll(PDO::FETCH_ASSOC);
 
 			$day_end  = strtotime("today + {$days} days") - 1;
-			$events   = $db->query("SELECT * FROM events e WHERE e.loc_id = {$space_id} AND e.private != 1 AND e.start < {$day_end} ORDER BY e.start ASC")->fetchAll(PDO::FETCH_ASSOC);
+			$events   = $db->query("SELECT * FROM events e WHERE e.location_id = {$space_id} AND e.private != 1 AND e.start < {$day_end} ORDER BY e.start ASC")->fetchAll(PDO::FETCH_ASSOC);
 			$bookings = $db->query("SELECT * FROM bookings b WHERE b.eid = {$space_id} AND b.account != 'admin' AND b.status LIKE '%Approved%' AND b.start < {$day_end} ORDER BY b.start ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 			// close the database connection
@@ -146,7 +145,6 @@
 	$audience = array();
 	$categories = array();
 	$events = true; // this checked by default
-	$images = null; // neither true nor false
 	$space = false;
 	$meetings = false;
 	$end = null;
@@ -175,9 +173,6 @@
 		if (isset($_GET['events'])) {
 			$events = filter_var($_GET['events'], FILTER_VALIDATE_BOOLEAN);
 		}
-		if (isset($_GET['images'])) {
-			$images = true;
-		}
 	}
 	if (isset($_GET['start'])) {
 		$start = prepareDate($_GET['start']);
@@ -196,7 +191,7 @@
 	$val = array();
 
 	if ($events) {
-		$val['events'] = getEvents($days, $public_and_private, $categories, $audience, $start, $end, $images);
+		$val['events'] = getEvents($days, $public_and_private, $categories, $audience, $start, $end);
 	}
 	if ($meetings) {
 		$val['meetings'] = getMeetings($days);
