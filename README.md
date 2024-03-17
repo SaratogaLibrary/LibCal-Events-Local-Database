@@ -36,6 +36,8 @@ const PDO_OPTIONS         = [PDO::ATTR_TIMEOUT => 0, PDO::ATTR_ERRMODE => PDO::E
 // For demonstration of the examples.
 // Set this to your location of this file's containing folder when accessed from a web page:
 const CONTENT_URL         = 'https://example.com/libcal/';
+const IMAGE_LOC           = CONTENT_URL . 'examples/library-svgrepo-com.svg';
+const BRAND_COLOR         = 'gray';
 ```
 
 - **$total_days**: Defines how far out the local database should retrieve, and store values from LibCal
