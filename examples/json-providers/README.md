@@ -50,6 +50,13 @@ For *Event* types, the following options are also available:
   - Provide this parameter (with or without any value at all) and it will prevent events that do not have an associated image from being returned
     Example: `?images` or `?images=1` or `?images=false`
 
+- Online
+
+  > Limit the returned results to only those that are either available in-person, or available online (hybrid are returned regardless)
+
+  - Provide this parameter with a true (1) or false (0) value and it will filter the events by its online capability
+    Example: `?online=0` or `?online=1`
+
 - All
 
   > Return events from both public *and private* calendars
