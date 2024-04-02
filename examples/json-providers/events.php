@@ -44,15 +44,22 @@
 		return $date;
 	}
 
-	function getEvents($days = 1, $all_events = false, $categories = array(), $audience = array(), $start = null, $end = null) {
+	function getEvents($days = 1, $all_events = false, $categories = array(), $audience = array(), $start = null, $end = null, $online = null) {
 		array_walk($audience,   'prepareAudience');
 		array_walk($categories, 'prepareCategories');
 		$internal = !$all_events ? ' AND events.private != 1 ' : '';
 		$auds     = count($audience)   ? ' AND '.implode(' OR ', $audience)   : '';
 		$cats     = count($categories) ? ' AND '.implode(' OR ', $categories) : '';
+		if ($online == true) {
+			// only return events that are hybrid or online-only
+			$online = ' AND events.online_seats IS NOT NULL ';
+		} else if ($online == false) {
+			// prevent displaying any online events
+			$online = ' AND (events.online_seats IS NULL OR (events.online_seats IS NOT NULL AND events.physical_seats IS NOT NULL)) ';
+		}
 
 		// Default query if no $start or $end
-		$query = 'SELECT * FROM events WHERE events.start < "'.(strtotime('+'.$days.' days 00:00:00')-1).'" '. $internal . $cats . $auds . ' ORDER BY events.start ASC, events.title ASC';
+		$query = 'SELECT * FROM events WHERE events.start < "'.(strtotime('+'.$days.' days 00:00:00')-1).'" '. $internal . $cats . $auds . $online . ' ORDER BY events.start ASC, events.title ASC';
 		if (isset($start) && isset($end)) {
 			// Base the timeframe on $start and either $days or $end, depending
 			$days_calc = $days - 1;
@@ -87,6 +94,7 @@
 		}
 	}
 
+	// Space reservations that were not created by library staff
 	function getMeetings($days = 1) {
 		try {
 			//open the database
@@ -113,7 +121,7 @@
 			$space = $db->query("SELECT * from spaces where id = {$space_id}")->fetchAll(PDO::FETCH_ASSOC);
 
 			$day_end  = strtotime("today + {$days} days") - 1;
-			$events   = $db->query("SELECT * FROM events e WHERE e.location_id = {$space_id} AND e.private != 1 AND e.start < {$day_end} ORDER BY e.start ASC")->fetchAll(PDO::FETCH_ASSOC);
+			$events   = $db->query("SELECT * FROM events e WHERE e.location_id = {$space_id} /*AND e.private != 1*/ AND e.start < {$day_end} ORDER BY e.start ASC")->fetchAll(PDO::FETCH_ASSOC);
 			$bookings = $db->query("SELECT * FROM bookings b WHERE b.eid = {$space_id} AND b.account != 'admin' AND b.status LIKE '%Approved%' AND b.start < {$day_end} ORDER BY b.start ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 			// close the database connection
@@ -136,6 +144,7 @@
 
 		// Force the room info (index 0) to top, and sort the room usage by start time, then return the array
 		ksort($result);
+		// die('<pre>'.print_r($result,1).'</pre>');
 		return $result;
 	}
 
@@ -149,6 +158,7 @@
 	$meetings = false;
 	$end = null;
 	$start = null;
+	$online = null;
 
 	// Get overrides, if any
 	if (isset($_GET['days']) && $_GET['days'] > 0) {
@@ -173,6 +183,9 @@
 		if (isset($_GET['events'])) {
 			$events = filter_var($_GET['events'], FILTER_VALIDATE_BOOLEAN);
 		}
+		if (isset($_GET['online'])) {
+			$online = filter_var($_GET['online'], FILTER_VALIDATE_BOOLEAN);
+		}
 	}
 	if (isset($_GET['start'])) {
 		$start = prepareDate($_GET['start']);
@@ -191,7 +204,7 @@
 	$val = array();
 
 	if ($events) {
-		$val['events'] = getEvents($days, $public_and_private, $categories, $audience, $start, $end);
+		$val['events'] = getEvents($days, $public_and_private, $categories, $audience, $start, $end, $online);
 	}
 	if ($meetings) {
 		$val['meetings'] = getMeetings($days);
