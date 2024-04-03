@@ -400,6 +400,8 @@ function set_events($db, $events, $calendars = null) {
 			}
 			$vals['audience'] = (isset($event->audience) && count($event->audience)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->audience)) : null;
 			$vals['audience_id'] = (isset($event->audience) && count($event->audience)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->audience)) : null;
+			$vals['campus'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->campus)) : null;
+			$vals['campus_id'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->campus)) : null;
 			$vals['cat_id'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->category)) : null;
 			$vals['category'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->category)) : null;
 			$vals['owner'] = $event->owner->name;
@@ -413,7 +415,19 @@ function set_events($db, $events, $calendars = null) {
 			$vals['geo_long'] = isset($event->geolocation->longitude) && !empty($event->geolocation->longitude) ? $event->geolocation->longitude : null;
 			$vals['cost'] = $event->registration_cost;
 			$vals['registration'] = (isset($event->registration) && $event->registration) ? 1 : 0;
-			$vals['registration_open'] = isset($event->has_registration_opened) && isset($event->has_registration_closed) ? $event->has_registration_opened && !$event->has_registration_closed : 0;
+			$vals['registration_type'] = $vals['registration'] ? 1 : null;
+			if ($vals['registration_type']) {
+				if ($event->seats && $event->seats == $event->online_seats) {
+					$vals['registration_type'] = 'online';
+				} else if ($event->seats && $event->seats == $event->physical_seats) {
+					$vals['registration_type'] = 'in-person';
+				} else {
+					$vals['registration_type'] = 'hybrid';
+				}
+			}
+			$vals['registration_open'] = isset($event->has_registration_opened) && isset($event->has_registration_closed) ? (int) ($event->has_registration_opened && !$event->has_registration_closed) : 0;
+			$vals['registration_closed'] = isset($event->has_registration_opened) && isset($event->has_registration_closed) ? (int) $event->has_registration_closed : 0;
+			$vals['registration_cost'] = $event->registration_cost;
 			$vals['seats'] = $event->seats;
 			$vals['seats_taken'] = $event->seats && $event->seats_taken ? $event->seats_taken : null;
 			$vals['physical_seats'] = $event->seats && $event->physical_seats ? $event->physical_seats : null;
