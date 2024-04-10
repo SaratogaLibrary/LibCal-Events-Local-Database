@@ -475,6 +475,10 @@ function WriteEvents($mpdf, $result, $values = [], $options = []) {
         if ($start_time == '12:00am' && $end_time == '11:59pm') {
             $display_time = 'All Day';
         } else {
+            if ($event['multiday']) {
+                $start_time = $event['start'] < strtotime('today') ? date('M j, g:ia', $event['start']) : date('g:ia', $event['start']);
+                $end_time   = $event['end'] > strtotime('tomorrow -1') ? date('M j, g:ia', $event['end']) : date('g:ia', $event['end']);
+            }
             $display_time = "{$start_time} - {$end_time}";
         }
         $tbl_header      = '';
