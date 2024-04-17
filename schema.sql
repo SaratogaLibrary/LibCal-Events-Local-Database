@@ -121,7 +121,7 @@ CREATE TABLE space_categories (
 CREATE TABLE equipment (
 	booking_id           TEXT NOT NULL,
 	id                   INTEGER NOT NULL,
-	eid                  INTEGER NOT NULL,        -- ?? id
+	eid                  INTEGER NOT NULL,        -- equipment id
 	cid                  INTEGER NOT NULL,        -- equipment category id
 	lid                  INTEGER NOT NULL,        -- location id
 	location_name        TEXT NOT NULL,
