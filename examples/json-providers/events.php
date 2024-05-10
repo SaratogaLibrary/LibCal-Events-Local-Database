@@ -53,7 +53,7 @@
 		if ($online == true) {
 			// only return events that are hybrid or online-only
 			$online = ' AND events.online_seats IS NOT NULL ';
-		} else if ($online == false) {
+		} else if ($online === false) {
 			// prevent displaying any online events
 			$online = ' AND (events.online_seats IS NULL OR (events.online_seats IS NOT NULL AND events.physical_seats IS NOT NULL)) ';
 		}
