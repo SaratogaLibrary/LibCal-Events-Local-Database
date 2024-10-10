@@ -17,6 +17,18 @@ const DATABASE_FILE       = __DIR__ . DIRECTORY_SEPARATOR . 'db.sqlite3'; // loc
 const DB_STRING_DELIMITER = '|';          // Seperates strings in combined TEXT fields
 const PDO_OPTIONS         = [PDO::ATTR_TIMEOUT => 0, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
 
+// Event specific API settings
+const GET_EVENT_NOTES    = true;
+const GET_INTERNAL_NOTES = true;
+
+// Space and Equipment API settings
+const INCLUDE_REMOTE_BOOKINGS    = true;  // excluded by default in the API calls (booking integrations such as from Outlook or Google Sync)
+const INCLUDE_CANCELLED_BOOKINGS = false; // included by default in the API calls
+const INCLUDE_TENTATIVE_BOOKINGS = false; // included by default in the API calls
+const GET_FORM_ANSWERS           = true;
+const GET_CHECKIN_STATUS         = true;
+// NOTE: Mediated Denied bookings seem to not be able to be pulled from the API (2024-10-08)
+
 // For demonstration of the examples:
 const CONTENT_URL         = 'https://example.com/libcal/';
 const IMAGE_LOC           = CONTENT_URL . 'examples/library-svgrepo-com.svg';
