@@ -15,9 +15,9 @@ CREATE TABLE locations (
 
 CREATE TABLE events (
 	id                   INTEGER NOT NULL UNIQUE,
-	allday               INTEGER NOT NULL DEFAULT 0 CHECK(allday IN (0,1)),
-	multiday             INTEGER NOT NULL DEFAULT 0 CHECK(allday IN (0,1)),
-	private              INTEGER NOT NULL DEFAULT 0 CHECK(private IN (0,1)),
+	allday               INTEGER NOT NULL DEFAULT 0 CHECK(allday   IN (0,1)),
+	multiday             INTEGER NOT NULL DEFAULT 0 CHECK(multiday IN (0,1)),
+	private              INTEGER NOT NULL DEFAULT 0 CHECK(private  IN (0,1)),
 	start                INTEGER NOT NULL,
 	end                  INTEGER NOT NULL,
 	setup                INTEGER,
@@ -25,16 +25,20 @@ CREATE TABLE events (
 	title                TEXT NOT NULL,
 	description          TEXT,
 	more_info            TEXT,
+	event_note           TEXT,
+	internal_notes       TEXT,
 	url                  TEXT,
 	admin_url            TEXT,
+	location_type        INTEGER NOT NULL DEFAULT 0 CHECK(location_type IN (0,2)), -- In-person (2), or not (0) (as of 2024-10-10)
 	location_id          TEXT DEFAULT "0",
 	location             TEXT,
-	campus               TEXT,
 	campus_id            INTEGER,
+	campus               TEXT,
 	audience_id          INTEGER,
 	audience             TEXT,
 	cat_id               INTEGER,
 	category             TEXT,
+	owner_id             INTEGER,
 	owner                TEXT NOT NULL,
 	presenter            TEXT,
 	cal_id               INTEGER,
@@ -46,10 +50,14 @@ CREATE TABLE events (
 	geo_long             TEXT,
 	cost                 INTEGER,
 	registration         INTEGER NOT NULL DEFAULT 0 CHECK(registration IN (0,1)),
+	registration_form_id INTEGER,
+	registration_linked  INTEGER,
 	registration_type    TEXT,
 	registration_open    INTEGER NOT NULL DEFAULT 0 CHECK(registration IN (0,1)),
 	registration_closed  INTEGER NOT NULL DEFAULT 0 CHECK(registration IN (0,1)),
 	registration_cost    INTEGER NOT NULL DEFAULT 0,
+	attendance_physical  INTEGER,
+	attendance_online    INTEGER,
 	seats                INTEGER,
 	seats_taken          INTEGER,
 	physical_seats       INTEGER,
@@ -79,7 +87,7 @@ CREATE TABLE spaces (
 );
 
 CREATE TABLE bookings (
-	booking_id           TEXT NOT NULL,
+	booking_id           TEXT NOT NULL,           -- matches equipment booking ID when booked together
 	id                   TEXT NOT NULL UNIQUE,
 	title                TEXT,                    -- nickname; "required", but can be null
 	eid                  INTEGER NOT NULL,        -- space id
@@ -89,7 +97,7 @@ CREATE TABLE bookings (
 	seat_id              INTEGER,
 	branch               TEXT NOT NULL,
 	category             TEXT NOT NULL,
-	location             TEXT NOT NULL,
+	location             TEXT NOT NULL,           -- item_name
 	seat_name            TEXT,
 	start	             INTEGER NOT NULL,
 	end                  INTEGER NOT NULL,
@@ -100,7 +108,9 @@ CREATE TABLE bookings (
 	account              TEXT NOT NULL,
 	status               TEXT,
 	check_in_code        TEXT,
-	check_in_status      TEXT
+	check_in_status      TEXT,
+	form_answers         TEXT,
+	cancelled            INTEGER
 );
 
 CREATE TABLE space_categories (
@@ -116,19 +126,18 @@ CREATE TABLE space_categories (
 	google               INTEGER NOT NULL DEFAULT 0 CHECK(google IN (0,1))
 );
 
-/*
 -- Commented out until equipment bookings can be accurately associated via the API results
 CREATE TABLE equipment (
-	booking_id           TEXT NOT NULL,
+	booking_id           TEXT NOT NULL,           -- matches space booking ID when booked together
 	id                   INTEGER NOT NULL,
 	eid                  INTEGER NOT NULL,        -- equipment id
 	cid                  INTEGER NOT NULL,        -- equipment category id
 	lid                  INTEGER NOT NULL,        -- location id
+	item_name            TEXT NOT NULL,           -- equipment name
+	category_name        TEXT NOT NULL,           -- equipment category name
 	location_name        TEXT NOT NULL,
-	category_name        TEXT NOT NULL,
-	item_name            TEXT NOT NULL,
-	from_date            INTEGER NOT NULL,
-	to_date              INTEGER NOT NULL,
+	start                INTEGER NOT NULL,
+	end                  INTEGER NOT NULL,
 	created              INTEGER NOT NULL,
 	firstName            TEXT,
 	lastName             TEXT,
@@ -139,4 +148,3 @@ CREATE TABLE equipment (
 	event_id             INTEGER,
 	event_title          TEXT
 );
-*/

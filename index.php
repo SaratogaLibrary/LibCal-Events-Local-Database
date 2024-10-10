@@ -16,6 +16,13 @@ STEPS:
 
 */
 
+/**
+ * AVAILABLE GET QUERY STRING PARAMETERS AND THEIR IMPACT
+ * ======================================================
+ * reset (boolean: 1|0) - Attempt to remove the current SQLite database file and create a new one
+ * days  (integer)      - Number of days (inclusive of the current day) to retrieve data; max 365
+ */
+
 require_once('config.php');
 
 /**
@@ -148,10 +155,13 @@ if ($bookings) {
 # EQUIPMENT BOOKINGS CURRENTLY DON'T MAP TO A SPACE OR EVENT IF THEY SHOULD.
 # ... SKIPPING IMPLEMENTATION FOR NOW ...
 // Get all equipment bookings
-// $equipment = get_equipment_bookings($cal_prefix, $token, $total_days);
-// if ($equipment) {
-// 	set_equipment_bookings($db, $equipment);
-// }
+$equipment = get_equipment_bookings($cal_prefix, $token, $total_days);
+if ($equipment) {
+	if (!$new_database) {
+		clear_equipment_dates($db, $total_days);
+	}
+	set_equipment_bookings($db, $equipment);
+}
 // die('<pre>'.print_r($equipment,true).'</pre>');
 
 
@@ -159,7 +169,7 @@ echo 'All gathered!';
 
 
 // Retrieve all space categories
-function get_categories(String $prefix, String $token, Array $locations) {
+function get_categories(string $prefix, string $token, array $locations) {
 	if (!$locations) return false;
 	$category_ids = [];
 	foreach ($locations as $location) {
@@ -175,7 +185,7 @@ function set_categories($db, $categories) {
 		foreach ($categories as $location) {
 			$location_id = $location->lid;
 			foreach ($location->categories as $category) {
-				$vals = array();
+				$vals = [];
 				$vals['id']                   = (int) $category->cid;
 				$vals['lid']                  = (int) $location_id;
 				$vals['location_name']        = $location->name;
@@ -207,7 +217,7 @@ function set_categories($db, $categories) {
 }
 
 // Clear the data in the tables, but keep the schema
-function truncate_table(String $table) {
+function truncate_table(string $table) {
 	switch($table) {
 		case 'calendars':
 			truncate('calendars');
@@ -231,7 +241,7 @@ function truncate_table(String $table) {
 			die('Invalid table name.');
 	};
 }
-/*private*/ function truncate(String $table) {
+/*private*/ function truncate(string $table) {
 	// Create the file and the database, and insert data into it ... and query it ... and print the results
 	try {
 		//open the database
@@ -249,6 +259,9 @@ function clear_event_dates($db, $future_days) {
 function clear_booking_dates($db, $future_days) {
 	clear_dates($db, 'bookings', $future_days);
 }
+function clear_equipment_dates($db, $future_days) {
+	clear_dates($db, 'equipment', $future_days);
+}
 function clear_dates($db, $table, $future_days) {
 	try {
 		$end_date   = date('Y-m-d\T23:59:59P', strtotime("today +{$future_days} days"));
@@ -260,7 +273,7 @@ function clear_dates($db, $table, $future_days) {
 }
 
 // Retrieve the space bookings - this includes public bookings, and bookings associated to events
-function get_bookings(String $prefix, String $token, Int $days = 1) {
+function get_bookings(string $prefix, string $token, int $days = 1) {
 	$bookings = [];
 	$page = 1;
 	do {
@@ -272,8 +285,13 @@ function get_bookings(String $prefix, String $token, Int $days = 1) {
 	} while ($result && count($result) == 500);
 	return $bookings ?: false;
 }
-/* private */ function get_all_bookings(String $prefix, String $token, Int $days = 1, Int $page = 1) {
-	$result = call_api($prefix, $token, "/1.1/space/bookings?checkInStatus=1&include_remote=1&days={$days}&limit=500&page={$page}");
+/* private */ function get_all_bookings(string $prefix, string $token, int $days = 1, int $page = 1) {
+	$include_remote = INCLUDE_REMOTE_BOOKINGS ? 1 : 0;
+	$include_cancelled = INCLUDE_CANCELLED_BOOKINGS ? 1 : 0;
+	$include_tentative = INCLUDE_TENTATIVE_BOOKINGS ? 1 : 0;
+	$include_check_in  = GET_CHECKIN_STATUS         ? 1 : 0;
+
+	$result = call_api($prefix, $token, "/1.1/space/bookings?checkInStatus={$include_check_in}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&include_remote={$include_remote}&days={$days}&limit=500&page={$page}");
 	return $result;
 }
 function set_bookings($db, $bookings) {
@@ -281,16 +299,16 @@ function set_bookings($db, $bookings) {
 		$db->beginTransaction();
 		foreach ($bookings as $booking) {
 			// Skip entering a cancelled booking into the database
-			if (isset($booking->cancelled)) continue;
+			if (!INCLUDE_CANCELLED_BOOKINGS && isset($booking->cancelled)) continue;
 
-			$vals = array();
+			$vals = [];
 			$vals['booking_id']      = $booking->bookId;
 			$vals['id']              = (int) $booking->id;         //
 			$vals['title']           = $booking->nickname ?? null; // $booking->event->title ?? $booking->nickname (?)
 			$vals['eid']             = (int) $booking->eid;        // space ID
 			$vals['cid']             = (int) $booking->cid;        // space category ID
 			$vals['lid']             = (int) $booking->lid;        // location (library/branch) ID
-			$vals['event_id']        = isset($booking->event->id) ? (int) $booking->event->id : null;
+			$vals['event_id']        = $booking->event            ? (int) $booking->event->id : null;
 			$vals['seat_id']         = isset($booking->seat_id)   ? (int) $booking->seat_id   : null;
 			$vals['branch']          = $booking->location_name;
 			$vals['category']        = $booking->category_name;
@@ -304,9 +322,18 @@ function set_bookings($db, $bookings) {
 			$vals['email']           = $booking->email;
 			$vals['account']         = $booking->account;
 			$vals['status']          = $booking->status;
-			$vals['check_in_code']   = isset($booking->check_in_code)   ? $booking->check_in_code   : null;
-			$vals['check_in_status'] = isset($booking->check_in_status) ? $booking->check_in_status : null;
-			# $vals['cancelled']       = $booking->cancelled;
+			$vals['check_in_code']   = GET_CHECKIN_STATUS && isset($booking->check_in_code)   ? $booking->check_in_code   : null;
+			$vals['check_in_status'] = GET_CHECKIN_STATUS && isset($booking->check_in_status) ? $booking->check_in_status : null;
+			if (GET_FORM_ANSWERS && !$booking->event) {
+				// Return and store only object values where the key matches a format of "q" followed by numbers
+				$bookingArray = (array) $booking;
+				$bookingArray = array_filter($bookingArray, function($v){
+					return preg_match('/^q\d{1,}$/', $v);
+				}, ARRAY_FILTER_USE_KEY);
+				// Serialize the array into a string value
+				$vals['form_answers'] = serialize($bookingArray);
+			}
+			$vals['cancelled']       = $booking->cancelled ?? null;
 
 			$keys        = array_keys($vals);
 			$fields      = implode(', ',$keys);
@@ -327,8 +354,8 @@ function set_bookings($db, $bookings) {
 	}
 }
 
-// Not yet called/used due to issue with no relatable IDs passed from the API
-function get_equipment_bookings(String $prefix, String $token, Int $days = 1) {
+// Retrieve all equipment bookings
+function get_equipment_bookings(string $prefix, string $token, int $days = 1) {
 	$bookings = [];
 	$page = 1;
 	do {
@@ -340,17 +367,65 @@ function get_equipment_bookings(String $prefix, String $token, Int $days = 1) {
 	} while ($result && count($result) == 500);
 	return $bookings ?: false;
 }
-/* private */ function get_all_equipment_bookings(String $prefix, String $token, Int $days = 1, Int $page = 1) {
+/* private */ function get_all_equipment_bookings(string $prefix, string $token, int $days = 1, int $page = 1) {
 	$result = call_api($prefix, $token, "/1.1/equipment/bookings?days={$days}&limit=500&page={$page}");
 	return $result;
 }
+function set_equipment_bookings($db, $equipment) {
+	if (isset($equipment) && count($equipment) > 0) {
+		$db->beginTransaction();
+		foreach ($equipment as $booking) {
+			// Skip entering a cancelled booking into the database
+			if (!INCLUDE_CANCELLED_BOOKINGS && isset($booking->cancelled)) continue;
+
+			$vals = [];
+			$vals['booking_id']      = $booking->bookId;
+			$vals['id']              = (int) $booking->id;         // unique ID for the specific record
+			$vals['eid']             = (int) $booking->eid;        // space ID
+			$vals['cid']             = (int) $booking->cid;        // space category ID
+			$vals['lid']             = (int) $booking->lid;        // location (library/branch) ID
+			$vals['start']           = strtotime($booking->fromDate);
+			$vals['end']             = strtotime($booking->toDate);
+			$vals['created']         = $booking->created;
+			$vals['firstname']       = $booking->firstName;
+			$vals['lastname']        = $booking->lastName;
+			$vals['email']           = $booking->email;
+			$vals['account']         = $booking->account;
+			$vals['status']          = $booking->status;
+			$vals['location_name']   = $booking->location_name;
+			$vals['category_name']   = $booking->category_name;
+			$vals['item_name']       = $booking->item_name;
+			$vals['event_id']        = $booking->event ? (int) $booking->event->id : null;
+			$vals['event_title']     = $booking->event ? $booking->event->title : null;
+			$vals['barcode']         = isset($booking->check_in_status) ? $booking->check_in_status : null;
+			$vals['cancelled']       = $booking->cancelled ?? null;
+
+			$keys        = array_keys($vals);
+			$fields      = implode(', ',$keys);
+			$placeholder = ':' . implode(', :', $keys);
+
+			$sth = $db->prepare("INSERT OR REPLACE INTO equipment ({$fields}) VALUES ({$placeholder})");
+			$sth->execute(array_values($vals));
+			$arr = $sth->errorInfo();
+		}
+		try {
+			$db->commit();
+		} catch (Exception $ex) {
+			if ($db->inTransaction()) {
+				$db->rollback();
+			}
+			die(''.$arr);
+		}
+	}
+}
 
 // Retrieve all events based on criteria passed in by parameters
-function get_events(String $prefix, String $token, Array $calendar_list, Int $days = 1) {
+function get_events(string $prefix, string $token, array $calendar_list, int $days = 1) {
 	$events = [];
 	foreach ($calendar_list as $calendar) {
 		$page = 1;
 		do {
+			// Get the first 500 events, continue checking until we don't return 500 events (last page)
 			$result = get_events_from_calendar($prefix, $token, $calendar->calid, $days, $page)->events;
 			if ($result) {
 				$events = array_merge($events, $result);
@@ -360,8 +435,8 @@ function get_events(String $prefix, String $token, Array $calendar_list, Int $da
 	}
 	return $events ?: false;
 }
-/* private */ function get_events_from_calendar(String $prefix, String $token, Int $cal_id, Int $days = 1, $page = 1) {
-	$result = call_api($prefix, $token, "/1.1/events?cal_id={$cal_id}&days={$days}&limit=500&page={$page}");
+/* private */ function get_events_from_calendar(string $prefix, string $token, int $cal_id, int $days = 1, $page = 1) {
+	$result = call_api($prefix, $token, "/1.1/events?cal_id={$cal_id}&days={$days}&limit=500&event_note=1&internal_notes=1&page={$page}");
 	return $result;
 }
 function set_events($db, $events, $calendars = null) {
@@ -375,7 +450,7 @@ function set_events($db, $events, $calendars = null) {
 	if (isset($events) && count($events) > 0) {
 		$db->beginTransaction();
 		foreach ($events as $event) {
-			$vals = array();
+			$vals = [];
 			$vals['id'] = (int) $event->id;
 			$vals['title'] = $event->title;
 			$vals['allday'] = (int) $event->allday;
@@ -387,6 +462,12 @@ function set_events($db, $events, $calendars = null) {
 			$vals['breakdown'] = $event->teardown_time;
 			$vals['description'] = $event->description;
 			$vals['more_info'] = $event->more_info;
+			if (GET_EVENT_NOTES) {
+				$vals['event_note'] = $event->event_note ?? null;
+			}
+			if (GET_INTERNAL_NOTES) {
+				$vals['internal_notes'] = (isset($event->internal_noteS) && count($event->internal_notes)) ? serialize($event->internal_notes) : null;
+			}
 			$vals['url'] = $event->url->public;
 			$vals['admin_url'] = $event->url->admin;
 			if (isset($event->location) && is_array($event->location)) {
@@ -398,12 +479,13 @@ function set_events($db, $events, $calendars = null) {
 				$vals['location_id'] = isset($event->location->id)   ? $event->location->id   : null;
 				$vals['location']    = isset($event->location->name) ? $event->location->name : null;
 			}
-			$vals['audience'] = (isset($event->audience) && count($event->audience)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->audience)) : null;
 			$vals['audience_id'] = (isset($event->audience) && count($event->audience)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->audience)) : null;
-			$vals['campus'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->campus)) : null;
+			$vals['audience'] = (isset($event->audience) && count($event->audience)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->audience)) : null;
 			$vals['campus_id'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->campus)) : null;
+			$vals['campus'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->campus)) : null;
 			$vals['cat_id'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->category)) : null;
 			$vals['category'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->category)) : null;
+			$vals['owner_id'] = $event->owner->id;
 			$vals['owner'] = $event->owner->name;
 			$vals['presenter'] = isset($event->presenter) && !empty($event->presenter) ? $event->presenter : null;
 			$vals['cal_id'] = $event->calendar->id;
@@ -415,6 +497,13 @@ function set_events($db, $events, $calendars = null) {
 			$vals['geo_long'] = isset($event->geolocation->longitude) && !empty($event->geolocation->longitude) ? $event->geolocation->longitude : null;
 			$vals['cost'] = $event->registration_cost;
 			$vals['registration'] = (isset($event->registration) && $event->registration) ? 1 : 0;
+			$vals['registration_form_id'] = $event->registration_form_id ?? null;
+			if (isset($event->registration_series_linked)) {
+				$vals['registration_linked'] = $event->registration_series_linked ? 1 : 0;
+			} else {
+				// Explicit in code, leaving this out would do the same thing in the database though
+				$vals['registration_linked'] = null;
+			}
 			$vals['registration_type'] = $vals['registration'] ? 1 : null;
 			if ($vals['registration_type']) {
 				if ($event->seats && $event->seats == $event->online_seats) {
@@ -428,6 +517,8 @@ function set_events($db, $events, $calendars = null) {
 			$vals['registration_open'] = isset($event->has_registration_opened) && isset($event->has_registration_closed) ? (int) ($event->has_registration_opened && !$event->has_registration_closed) : 0;
 			$vals['registration_closed'] = isset($event->has_registration_opened) && isset($event->has_registration_closed) ? (int) $event->has_registration_closed : 0;
 			$vals['registration_cost'] = $event->registration_cost;
+			$vals['attendance_physical'] = isset($event->attendance->in_person) && $event->attendance->in_person ? $event->attendance->in_person : null;
+			$vals['attendance_online'] = isset($event->attendance->online) && $event->attendance->online ? $event->attendance->online : null;
 			$vals['seats'] = $event->seats;
 			$vals['seats_taken'] = $event->seats && $event->seats_taken ? $event->seats_taken : null;
 			$vals['physical_seats'] = $event->seats && $event->physical_seats ? $event->physical_seats : null;
@@ -470,6 +561,8 @@ function get_space_utilization($prefix, $token, $id) {
 function set_space_utilization($db, $spaces_data) {
 	if (isset($spaces_data) && count($spaces_data) > 0) {
 		$db->beginTransaction();
+		// Not storing location summary data...should we?
+
 		foreach ($spaces_data as $location_id => $obj) {
 			foreach ($obj->zones as $zone) {
 				// Not storing zone info, but if we were...
@@ -478,7 +571,7 @@ function set_space_utilization($db, $spaces_data) {
 
 				// Loop through the spaces to get the info
 				foreach ($zone->spaces as $space) {
-					$vals = array();
+					$vals = [];
 					$vals['id']               = (int) $space->id;
 					$vals['name']             = $space->name;
 					$vals['bookableAsWhole']  = (int) $space->bookableAsWhole;
@@ -516,7 +609,7 @@ function set_space_locations($db, $locs) {
 	if (isset($locs) && count($locs) > 0) {
 		$db->beginTransaction();
 		foreach ($locs as $loc) {
-			$vals = array();
+			$vals = [];
 			$vals['id']         = (int) $loc->lid;
 			$vals['name']       = $loc->name;
 			$vals['public']     = (int) $loc->public;
@@ -549,7 +642,7 @@ function set_calendars($db, $cals) {
 	if (isset($cals) && count($cals) > 0) {
 		$db->beginTransaction();
 		foreach ($cals as $cal) {
-			$vals = array();
+			$vals = [];
 			$vals['id']         = (int) $cal->calid;
 			$vals['name']       = $cal->name;
 			$vals['url']        = $cal->url->public;
@@ -618,7 +711,7 @@ function get_authentication($prefix, int $id = null, string $secret = null) {
 }
 
 // Initiate a cURL request to retrieve and return a JSON payload, or return false
-function call_api(String $prefix, String $token, String $endpoint = null) {
+function call_api(string $prefix, string $token, string $endpoint = null) {
 	$curl = curl_init();
 	curl_setopt_array($curl, array(
 		CURLOPT_URL => "{$prefix}{$endpoint}",
