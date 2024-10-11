@@ -110,7 +110,7 @@ CREATE TABLE bookings (
 	check_in_code        TEXT,
 	check_in_status      TEXT,
 	form_answers         TEXT,
-	cancelled            INTEGER
+	cancelled            INTEGER NOT NULL DEFAULT 0 CHECK(cancelled IN (0,1))
 );
 
 CREATE TABLE space_categories (
@@ -146,5 +146,7 @@ CREATE TABLE equipment (
 	status               TEXT,
 	barcode              INTEGER,
 	event_id             INTEGER,
-	event_title          TEXT
+	event_title          TEXT,
+	form_answers         TEXT,
+	cancelled            INTEGER NOT NULL DEFAULT 0 CHECK(cancelled IN (0,1))
 );

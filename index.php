@@ -289,9 +289,10 @@ function get_bookings(string $prefix, string $token, int $days = 1) {
 	$include_remote = INCLUDE_REMOTE_BOOKINGS ? 1 : 0;
 	$include_cancelled = INCLUDE_CANCELLED_BOOKINGS ? 1 : 0;
 	$include_tentative = INCLUDE_TENTATIVE_BOOKINGS ? 1 : 0;
+	$include_answers   = GET_FORM_ANSWERS           ? 1 : 0;
 	$include_check_in  = GET_CHECKIN_STATUS         ? 1 : 0;
 
-	$result = call_api($prefix, $token, "/1.1/space/bookings?checkInStatus={$include_check_in}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&include_remote={$include_remote}&days={$days}&limit=500&page={$page}");
+	$result = call_api($prefix, $token, "/1.1/space/bookings?formAnswers={$include_answers}&checkInStatus={$include_check_in}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&include_remote={$include_remote}&days={$days}&limit=500&page={$page}");
 	return $result;
 }
 function set_bookings($db, $bookings) {
@@ -324,6 +325,7 @@ function set_bookings($db, $bookings) {
 			$vals['status']          = $booking->status;
 			$vals['check_in_code']   = GET_CHECKIN_STATUS && isset($booking->check_in_code)   ? $booking->check_in_code   : null;
 			$vals['check_in_status'] = GET_CHECKIN_STATUS && isset($booking->check_in_status) ? $booking->check_in_status : null;
+			$vals['cancelled']       = $booking->cancelled ?? null;
 			if (GET_FORM_ANSWERS && !$booking->event) {
 				// Return and store only object values where the key matches a format of "q" followed by numbers
 				$bookingArray = (array) $booking;
@@ -333,7 +335,6 @@ function set_bookings($db, $bookings) {
 				// Serialize the array into a string value
 				$vals['form_answers'] = serialize($bookingArray);
 			}
-			$vals['cancelled']       = $booking->cancelled ?? null;
 
 			$keys        = array_keys($vals);
 			$fields      = implode(', ',$keys);
@@ -368,7 +369,11 @@ function get_equipment_bookings(string $prefix, string $token, int $days = 1) {
 	return $bookings ?: false;
 }
 /* private */ function get_all_equipment_bookings(string $prefix, string $token, int $days = 1, int $page = 1) {
-	$result = call_api($prefix, $token, "/1.1/equipment/bookings?days={$days}&limit=500&page={$page}");
+	$include_cancelled = INCLUDE_CANCELLED_BOOKINGS ? 1 : 0;
+	$include_tentative = INCLUDE_TENTATIVE_BOOKINGS ? 1 : 0;
+	$include_answers   = GET_FORM_ANSWERS           ? 1 : 0;
+
+	$result = call_api($prefix, $token, "/1.1/equipment/bookings?formAnswers={$include_answers}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}days={$days}&limit=500&page={$page}");
 	return $result;
 }
 function set_equipment_bookings($db, $equipment) {
@@ -399,6 +404,15 @@ function set_equipment_bookings($db, $equipment) {
 			$vals['event_title']     = $booking->event ? $booking->event->title : null;
 			$vals['barcode']         = isset($booking->check_in_status) ? $booking->check_in_status : null;
 			$vals['cancelled']       = $booking->cancelled ?? null;
+			if (GET_FORM_ANSWERS && !$booking->event) {
+				// Return and store only object values where the key matches a format of "q" followed by numbers
+				$bookingArray = (array) $booking;
+				$bookingArray = array_filter($bookingArray, function($v){
+					return preg_match('/^q\d{1,}$/', $v);
+				}, ARRAY_FILTER_USE_KEY);
+				// Serialize the array into a string value
+				$vals['form_answers'] = serialize($bookingArray);
+			}
 
 			$keys        = array_keys($vals);
 			$fields      = implode(', ',$keys);
