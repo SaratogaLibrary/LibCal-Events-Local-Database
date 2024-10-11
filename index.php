@@ -373,7 +373,7 @@ function get_equipment_bookings(string $prefix, string $token, int $days = 1) {
 	$include_tentative = INCLUDE_TENTATIVE_BOOKINGS ? 1 : 0;
 	$include_answers   = GET_FORM_ANSWERS           ? 1 : 0;
 
-	$result = call_api($prefix, $token, "/1.1/equipment/bookings?formAnswers={$include_answers}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}days={$days}&limit=500&page={$page}");
+	$result = call_api($prefix, $token, "/1.1/equipment/bookings?formAnswers={$include_answers}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&Sdays={$days}&limit=500&page={$page}");
 	return $result;
 }
 function set_equipment_bookings($db, $equipment) {
