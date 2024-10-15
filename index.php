@@ -9,7 +9,7 @@ STEPS:
 	b. else assign content of file to variable
 2. Acquire all available calendar IDs and visibility [/calenars]
 3. Acquire all available branch IDs, and whether admin only, and if public [/space/locations]
-4. Loop [/space/utilization] once per branch/location to get spaces': names and ids
+4. Loop [/space/items/{lid}] once per branch/location to get spaces' names and ids
 5. Loop [/events] at least once per calendar
 6. [/space/bookings]
 7. (NEEDED?) Loop [/space/categories] per location for: cID, public, admin_only
@@ -114,16 +114,16 @@ if ($new_database) {
 	// Get spaces per branch/location
 	$spaces = [];
 	foreach ($locations as $location) {
-		$usage = get_space_utilization($cal_prefix, $token, $location->lid);
-		if ($usage === false) {
-			die('No space usage found; possible API failure?');
+		$items = get_space_details($cal_prefix, $token, $location->lid);
+		if ($items === false) {
+			die('No spaces found; possible API failure?');
 		}
-		$spaces[$location->lid] = $usage;
+		$spaces[$location->lid] = $items;
 	}
 	if (empty($spaces)) {
 		die('No spaces found. Unable to continue.');
 	} else {
-		set_space_utilization($db, $spaces);
+		set_space_details($db, $spaces);
 	}
 
 	// Get all categories and attributes
@@ -568,40 +568,44 @@ function set_events($db, $events, $calendars = null) {
 }
 
 // Retrieve detailed data from a particular space
-function get_space_utilization($prefix, $token, $id) {
-	$result = call_api($prefix, $token, "/api/1.1/space/utilization/{$id}");
+function get_space_details($prefix, $token, $id) {
+	$result = call_api($prefix, $token, "/api/1.1/space/items/{$id}?visibility=admin_only");
 	return $result;
 }
-function set_space_utilization($db, $spaces_data) {
+function set_space_details($db, $spaces_data) {
 	if (isset($spaces_data) && count($spaces_data) > 0) {
 		$db->beginTransaction();
-		// Not storing location summary data...should we?
-
 		foreach ($spaces_data as $location_id => $obj) {
-			foreach ($obj->zones as $zone) {
-				// Not storing zone info, but if we were...
-				$zone_id = $zone->id;
-				$zone_name = $zone->name;
+			// Loop through the spaces to get the info
+			foreach ($obj as $space) {
+				$vals = [];
+				$vals['id']                         = (int) $space->id;
+				$vals['name']                       = $space->name;
+				$vals['description']                = $space->description;
+				$vals['termsAndConditions']         = $space->termsAndConditions;
+				$vals['image']                      = $space->image;
+				$vals['capacity']                   = (int) $space->capacity;
+				$vals['formId']                     = (int) $space->formid;
+				$vals['isBookableAsWhole']          = (int) $space->isBookableAsWhole;
+				$vals['isEventLocation']            = (int) $space->isEventLocation;
+				$vals['zoneId']                     = (int) $space->zoneId;
+				$vals['google']                     = $space->google ? 1 : 0;
+				$vals['exchange']                   = $space->exchange ? 1 : 0;
+				$vals['filter_ids']                 = !empty($space->filter_ids) ? serialize($space->filter_ids) : null;
+				$vals['zoneName']                   = $space->zoneName;
+				$vals['groupId']                    = (int) $space->groupId;
+				$vals['groupName']                  = $space->groupName;
+				$vals['groupTermsAndConditions']    = $space->groupTermsAndConditions;
+				$vals['locationTermsAndConditions'] = $space->locationTermsAndConditions;
+				$vals['lid']                        = (int) $location_id;
 
-				// Loop through the spaces to get the info
-				foreach ($zone->spaces as $space) {
-					$vals = [];
-					$vals['id']               = (int) $space->id;
-					$vals['name']             = $space->name;
-					$vals['bookableAsWhole']  = (int) $space->bookableAsWhole;
-					$vals['currentOccupancy'] = (int) $space->currentOccupancy;
-					$vals['currentCapacity']  = (int) $space->currentCapacity;
-					$vals['maxCapacity']      = (int) $space->maxCapacity;
-					$vals['lid']              = (int) $location_id;
+				$keys        = array_keys($vals);
+				$fields      = '`'.implode('`, `',$keys).'`';
+				$placeholder = ':' . implode(', :', $keys);
 
-					$keys        = array_keys($vals);
-					$fields      = '`'.implode('`, `',$keys).'`';
-					$placeholder = ':' . implode(', :', $keys);
-
-					$sth = $db->prepare("INSERT INTO `spaces` ({$fields}) VALUES ({$placeholder})");
-					$sth->execute(array_values($vals));
-					$arr = $sth->errorInfo();
-				}
+				$sth = $db->prepare("INSERT INTO `spaces` ({$fields}) VALUES ({$placeholder})");
+				$sth->execute(array_values($vals));
+				$arr = $sth->errorInfo();
 			}
 		}
 		try {
