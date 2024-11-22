@@ -7,12 +7,13 @@ STEPS:
 1. Check for "token" file [/oauth/token]
 	a. if > 56 minutes old, re-authenticate and save contents to file and variable
 	b. else assign content of file to variable
-2. Acquire all available calendar IDs and visibility [/calenars]
+2. Acquire all available calendar IDs and visibility [/calendars]
 3. Acquire all available branch IDs, and whether admin only, and if public [/space/locations]
 4. Loop [/space/items/{lid}] once per branch/location to get spaces' names and ids
 5. Loop [/events] at least once per calendar
 6. [/space/bookings]
-7. (NEEDED?) Loop [/space/categories] per location for: cID, public, admin_only
+7. Loop [/space/categories] per location for: cID, public, admin_only
+8. [/equipment/bookings]
 
 */
 
@@ -20,7 +21,7 @@ STEPS:
  * AVAILABLE GET QUERY STRING PARAMETERS AND THEIR IMPACT
  * ======================================================
  * reset (boolean: 1|0) - Attempt to remove the current SQLite database file and create a new one
- * days  (integer)      - Number of days (inclusive of the current day) to retrieve data; max 365
+ * days  (integer)      - Number of days (inclusive of the current day) to retrieve data; max 365; overrides $total_days in config
  */
 
 require_once('config.php');
@@ -291,8 +292,9 @@ function get_bookings(string $prefix, string $token, int $days = 1) {
 	$include_tentative = INCLUDE_TENTATIVE_BOOKINGS ? 1 : 0;
 	$include_answers   = GET_FORM_ANSWERS           ? 1 : 0;
 	$include_check_in  = GET_CHECKIN_STATUS         ? 1 : 0;
+	$include_notes     = GET_INTERNAL_NOTES         ? 1 : 0;
 
-	$result = call_api($prefix, $token, "/1.1/space/bookings?formAnswers={$include_answers}&checkInStatus={$include_check_in}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&include_remote={$include_remote}&days={$days}&limit=500&page={$page}");
+	$result = call_api($prefix, $token, "/1.1/space/bookings?formAnswers={$include_answers}&checkInStatus={$include_check_in}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&include_notes={$include_notes}&include_remote={$include_remote}&days={$days}&limit=500&page={$page}");
 	return $result;
 }
 function set_bookings($db, $bookings) {
@@ -326,6 +328,9 @@ function set_bookings($db, $bookings) {
 			$vals['check_in_code']   = GET_CHECKIN_STATUS && isset($booking->check_in_code)   ? $booking->check_in_code   : null;
 			$vals['check_in_status'] = GET_CHECKIN_STATUS && isset($booking->check_in_status) ? $booking->check_in_status : null;
 			$vals['cancelled']       = $booking->cancelled ?? null;
+			if (GET_INTERNAL_NOTES) {
+				$vals['internal_notes'] = (isset($booking->internal_notes) && count($booking->internal_notes)) ? serialize($booking->internal_notes) : null;
+			}
 			if (GET_FORM_ANSWERS && !$booking->event) {
 				// Return and store only object values where the key matches a format of "q" followed by numbers
 				$bookingArray = (array) $booking;
@@ -372,8 +377,9 @@ function get_equipment_bookings(string $prefix, string $token, int $days = 1) {
 	$include_cancelled = INCLUDE_CANCELLED_BOOKINGS ? 1 : 0;
 	$include_tentative = INCLUDE_TENTATIVE_BOOKINGS ? 1 : 0;
 	$include_answers   = GET_FORM_ANSWERS           ? 1 : 0;
+	$include_notes     = GET_INTERNAL_NOTES         ? 1 : 0;
 
-	$result = call_api($prefix, $token, "/1.1/equipment/bookings?formAnswers={$include_answers}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&Sdays={$days}&limit=500&page={$page}");
+	$result = call_api($prefix, $token, "/1.1/equipment/bookings?formAnswers={$include_answers}&include_tentative={$include_tentative}&include_cancel={$include_cancelled}&include_notes={$include_notes}&days={$days}&limit=500&page={$page}");
 	return $result;
 }
 function set_equipment_bookings($db, $equipment) {
@@ -397,6 +403,9 @@ function set_equipment_bookings($db, $equipment) {
 			$vals['email']           = $booking->email;
 			$vals['account']         = $booking->account;
 			$vals['status']          = $booking->status;
+			if (GET_INTERNAL_NOTES) {
+				$vals['internal_notes'] = (isset($booking->internal_noteS) && count($booking->internal_notes)) ? serialize($booking->internal_notes) : null;
+			}
 			$vals['location_name']   = $booking->location_name;
 			$vals['category_name']   = $booking->category_name;
 			$vals['item_name']       = $booking->item_name;

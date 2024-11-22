@@ -14,7 +14,7 @@ function getActiveLocations() {
 
 		$locations = [];
 		foreach ($result as $location_match) {
-			$locations[$location_match['id']] = $location_match['name'];
+			$locations[$location_match['id']] = $location_match;
 		}
 		asort($locations);
 		return $locations;
