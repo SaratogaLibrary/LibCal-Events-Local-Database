@@ -19,6 +19,8 @@ const PDO_OPTIONS         = [PDO::ATTR_TIMEOUT => 0, PDO::ATTR_ERRMODE => PDO::E
 
 // Event specific API settings
 const GET_EVENT_NOTES    = true;
+
+// Event, space booking, and equipment setting
 const GET_INTERNAL_NOTES = true;
 
 // Space and Equipment API settings
