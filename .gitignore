@@ -3,6 +3,7 @@
 /config.php
 /token
 /db.sqlite3
+/examples/json-providers/categories.php
 
 # IDE and editor specific files #
 #################################
