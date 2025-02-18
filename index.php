@@ -147,6 +147,7 @@ if ($events) {
 // Get all space bookings (to determine non-event room/space usage)
 $bookings = get_bookings($cal_prefix, $token, $total_days);
 if ($bookings) {
+	// Handles fixing day-of cancellations from events and spaces
 	if (!$new_database) {
 		clear_booking_dates($db, $total_days);
 	}
@@ -508,6 +509,8 @@ function set_events($db, $events, $calendars = null) {
 			$vals['campus'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->campus)) : null;
 			$vals['cat_id'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->category)) : null;
 			$vals['category'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->category)) : null;
+			$vals['tag_id'] = (isset($event->internal_tags) && count($event->internal_tags)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->internal_tags)) : null;
+			$vals['internal_tags'] = (isset($event->internal_tags) && count($event->internal_tags)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->internal_tags)) : null;
 			$vals['owner_id'] = $event->owner->id;
 			$vals['owner'] = $event->owner->name;
 			$vals['presenter'] = isset($event->presenter) && !empty($event->presenter) ? $event->presenter : null;
