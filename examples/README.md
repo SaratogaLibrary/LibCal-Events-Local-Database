@@ -12,6 +12,8 @@ To get some creative ideas started, here are a few projects that can take advant
    This project offers your patrons a way to generate an event brochure that is customized to their preferences based on available attributes from your
    event calendar's data. This could be the audience type, category of event, or location (space). These are, by default, the provided attributes that
    can be filtered, but this can fairly easily be extended to consider other attributes as found in the SQLite database that this project creates.
+5. [Room Setup Report](room-setup-report/)  
+   It is often convenient to be able to provide a quick view (optionally printable) of what setup and equipment an event may require. Although limited by the capabilities of the API, this example can pull all events and public bookings from the Events and Spaces modules, and attach any equipment requested that is directly associated to each item. Room setup is pulled from the Event's "Event Note" field. Options provided are the start and end date, the output format (HTML or DOCX), and if the output should show *all* rooms, or just those that have equipment/setup needs. This uses the [PhpOffice/PhpWord](https://github.com/PHPOffice/PHPWord) open source project to generate the Word Documents.
 
 ## Contributing
 
