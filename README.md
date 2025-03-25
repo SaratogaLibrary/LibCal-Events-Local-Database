@@ -52,6 +52,11 @@ const GET_CHECKIN_STATUS         = true;
 const CONTENT_URL         = 'https://example.com/libcal/';
 const IMAGE_LOC           = CONTENT_URL . 'examples/library-svgrepo-com.svg';
 const BRAND_COLOR         = '#808080'; // must be defined in HTML HEX for the brochure example
+const PASSCODE            = '12345';
+
+// Time and Date Formats
+const SHORT_TIME_FORMAT   = 'g:ia';
+const LONG_DATE_FORMAT    = 'l, F j, Y';
 ```
 
 - **$total_days**: Defines how far out the local database should retrieve, and store values from LibCal
