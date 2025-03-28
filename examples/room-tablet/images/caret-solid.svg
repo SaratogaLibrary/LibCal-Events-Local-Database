@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="caret-solid" viewBox="0 0 448 512">
+  <g id="caret-group" style="stroke:#000;stroke-width:63;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1" transform="translate(.367 16.222)">
+    <path id="caret-right" d="m223.482 158.81 160.301 161.937"/>
+    <path id="caret-left" d="M223.783 158.81 63.482 320.747"/>
+  </g>
+</svg>

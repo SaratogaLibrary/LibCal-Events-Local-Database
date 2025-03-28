@@ -54,8 +54,8 @@ const IMAGE_LOC           = CONTENT_URL . 'examples/library-svgrepo-com.svg';
 const BRAND_COLOR         = '#808080'; // must be defined in HTML HEX for the brochure example
 const PASSCODE            = '12345';
 
-// Time and Date Formats
-const SHORT_TIME_FORMAT   = 'g:ia';
+// Time and Date Formats (https://www.php.net/manual/en/datetime.format.php)
+const SHORT_TIME_FORMAT   = 'g:i&#8198;a';
 const LONG_DATE_FORMAT    = 'l, F j, Y';
 ```
 
