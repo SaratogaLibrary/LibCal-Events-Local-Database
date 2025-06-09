@@ -460,7 +460,7 @@ function get_events(string $prefix, string $token, array $calendar_list, int $da
 	return $events ?: false;
 }
 /* private */ function get_events_from_calendar(string $prefix, string $token, int $cal_id, int $days = 1, $page = 1) {
-	$result = call_api($prefix, $token, "/1.1/events?cal_id={$cal_id}&days={$days}&limit=500&event_note=1&internal_notes=1&page={$page}");
+	$result = call_api($prefix, $token, "/1.1/events?strict=1&cal_id={$cal_id}&days={$days}&limit=500&event_note=1&internal_notes=1&page={$page}");
 	return $result;
 }
 function set_events($db, $events, $calendars = null) {

@@ -35,8 +35,6 @@
 				<th>Setup / Info</th>
 			</tr>
 <?php
-			$booking_count = count($bookings);
-			$looping_count = $booking_count-1;
 			foreach ($bookings as $booking):
 				// Setup / Info Notes
 				$notes = '';

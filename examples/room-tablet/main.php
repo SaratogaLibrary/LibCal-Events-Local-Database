@@ -13,8 +13,8 @@
 	$events = $event_data = json_decode(@file_get_contents(CONTENT_URL . 'examples/json-providers/events.php?space='.$location_id), true);
 
 	$room_data = array_shift($events);
-	$current = array_values(array_filter($events, 'get_current'));
-	$events  = array_values(array_filter($events, 'filter_old'));
+	$current   = array_values(array_filter($events, 'get_current'));
+	$events    = array_values(array_filter($events, 'filter_old'));
 	if ($current) $current = $current[0];
 	
 	function get_current($a) {
@@ -96,7 +96,11 @@
 		<header class="room-name"><?= $room_data['name'] ?></header>
 		<div class="<?= $statusClass ?>">
 			<div class="room-info">
-				<div class="event-name"><a href="#" class="action event-link" data-modal="eventInfo" data-eid="<?= $current['id'] ?? '' ?>" data-start="<?= $current['start'] ?? '' ?>"><?= $current['title'] ?></a></div>
+				<div class="event-name">
+					<a href="#" class="action event-link" data-modal="eventInfo" data-eid="<?= $current['id'] ?? '' ?>" data-start="<?= $current['start'] ?? '' ?>">
+						<?= $current['title'] ?>
+					</a>
+				</div>
 				<div class="curtime">
 <?php if (!isset($current['id'])): ?>
 					<?= $current['curtime'] ?>
@@ -137,7 +141,7 @@
 		<!-- <div id="qrcode"></div> -->
 		<div class="modal-container">
 			<div class="modal-content">
-				<div class="description"></div>
+				<div class="description">Please wait...</div>
 			</div>
 		</div>
 	</dialog>

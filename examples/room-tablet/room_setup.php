@@ -2,7 +2,7 @@
 
 $query_string = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 
-// Retrieve the room setup data
+// Clean the data structure for the retrieved room setup data
 function filter_setup_entries($setup) {
     $filtered = [];
     foreach ($setup as $day => $room_events) {
