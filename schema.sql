@@ -36,6 +36,7 @@ CREATE TABLE events (
 	campus                     TEXT,
 	audience_id                TEXT,
 	audience                   TEXT,
+	audience_breakdown         TEXT,                    -- JSON array of attendance by audience ID and name, if set
 	cat_id                     TEXT,
 	category                   TEXT,
 	tag_id                     TEXT,

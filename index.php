@@ -164,10 +164,16 @@ if ($equipment) {
 	}
 	set_equipment_bookings($db, $equipment);
 }
-// die('<pre>'.print_r($equipment,true).'</pre>');
 
 
 echo 'All gathered!';
+
+
+// ================================
+// ================================
+// ======= FUNCTIONS BELOW ========
+// ================================
+// ================================
 
 
 // Retrieve all space categories
@@ -496,17 +502,20 @@ function set_events($db, $events, $calendars = null) {
 			$vals['admin_url'] = $event->url->admin;
 			if (isset($event->location) && is_array($event->location)) {
 				// This might eventually become default
-				$vals['location_id'] = implode(DB_STRING_DELIMITER, array_column($event->location, 'id'));
-				$vals['location']    = implode(DB_STRING_DELIMITER, array_column($event->location, 'name'));
+				$vals['location_type'] = implode(DB_STRING_DELIMITER, array_column($event->location, 'type'));
+				$vals['location_id']   = implode(DB_STRING_DELIMITER, array_column($event->location, 'id'));
+				$vals['location']      = implode(DB_STRING_DELIMITER, array_column($event->location, 'name'));
 			} else {
 				// As of development time this is the only valid if/else path
-				$vals['location_id'] = isset($event->location->id)   ? $event->location->id   : null;
-				$vals['location']    = isset($event->location->name) ? $event->location->name : null;
+				$vals['location_type'] = isset($event->location->type) ? $event->location->type : null;
+				$vals['location_id']   = isset($event->location->id)   ? $event->location->id   : null;
+				$vals['location']      = isset($event->location->name) ? $event->location->name : null;
 			}
 			$vals['audience_id'] = (isset($event->audience) && count($event->audience)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->audience)) : null;
 			$vals['audience'] = (isset($event->audience) && count($event->audience)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->audience)) : null;
-			$vals['campus_id'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->campus)) : null;
-			$vals['campus'] = (!empty($event->campus) && count($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->campus)) : null;
+			$vals['audience_breakdown'] = (isset($event->audience_breakdown) && $event->audience_breakdown) ? (string) json_encode($event->audience_breakdown) : null;
+			$vals['campus_id'] = (isset($event->campus) && !empty($event->campus) && is_array($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->campus)) : null;
+			$vals['campus'] = (isset($event->campus) && !empty($event->campus) && is_array($event->campus)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->campus)) : null;
 			$vals['cat_id'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->category)) : null;
 			$vals['category'] = (isset($event->category) && count($event->category)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->category)) : null;
 			$vals['tag_id'] = (isset($event->internal_tags) && count($event->internal_tags)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->id; }, $event->internal_tags)) : null;
