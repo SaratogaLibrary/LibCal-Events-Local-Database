@@ -11,7 +11,7 @@ To get some creative ideas started, here are a few projects that can take advant
 4. [Brochure Generator](brochure/)  
    This project offers your patrons a way to generate an event brochure that is customized to their preferences based on available attributes from your
    event calendar's data. This could be the audience type, category of event, or location (space). These are, by default, the provided attributes that
-   can be filtered, but this can fairly easily be extended to consider other attributes as found in the SQLite database that this project creates.
+   can be filtered, but this can fairly easily be extended to consider other attributes as found in the SQLite database that this project creates. This uses the [mPDF](https://mpdf.github.io/) open source project to generate the Word Documents.  
      
    (**NOTE:** The generated PDF is _not_ fully accessible for online use [printed documents should be fine]. PDF libraries for PHP cannot currently generate PDF/UA (ISO 14289) compatible PDF documents. This project is still a good showcase of what is possible using the LibCal API.)
 6. [Room Setup Report](room-setup-report/)  
@@ -22,4 +22,5 @@ To get some creative ideas started, here are a few projects that can take advant
 > **NOTE:** Contributing to repositories on Github requires a Github account. It's free, quick, and easy.
 
 Do you have any example projects, using this solution, that you'd like to share with others? Send a pull request!
+
 
