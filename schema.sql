@@ -167,3 +167,32 @@ CREATE TABLE equipment (
 	form_answers               TEXT,
 	cancelled                  INTEGER NOT NULL DEFAULT 0 CHECK(cancelled IN (0,1))
 );
+
+CREATE TABLE appointment_accounts (
+	id                         INTEGER NOT NULL,
+	firstname                  TEXT NOT NULL,
+	lastname                   TEXT NOT NULL,
+	email                      TEXT NOT NULL
+);
+
+CREATE TABLE appointment_bookings (
+	id                         INTEGER NOT NULL,
+	start                      INTEGER NOT NULL,
+	end                        INTEGER NOT NULL,
+	firstname                  TEXT NOT NULL,
+	lastname                   TEXT NOT NULL,
+	email                      TEXT NOT NULL,
+	account                    TEXT NOT NULL,           -- will duplicate 'email' if accounts are not in use by the system config
+	smsWanted                  INTEGER NOT NULL DEFAULT 0 CHECK(smsWanted IN (0,1)),
+	phoneNumber                TEXT,
+	userId                     INTEGER NOT NULL,        -- ID of the (staff) user account that an appointment is made with
+	location                   TEXT,
+	locationId                 INTEGER,
+	groupName                  TEXT,
+	groupId                    INTEGER,
+	categoryId                 INTEGER,
+	directions                 TEXT,
+	cancelled                  INTEGER DEFAULT 0 CHECK(cancelled IN (0,1)),
+	userShowedUp               TEXT,
+	answers                    TEXT                     -- JSON data of the form answers
+)

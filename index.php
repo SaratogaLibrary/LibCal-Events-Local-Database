@@ -165,6 +165,22 @@ if ($equipment) {
 	set_equipment_bookings($db, $equipment);
 }
 
+// Get all appointment-eligible user accounts
+if ($new_database) {
+	$appointment_accounts = get_appointment_accounts($cal_prefix, $token);
+	if ($appointment_accounts) {
+		set_appointment_accounts($db, $appointment_accounts);
+	}
+}
+// Get all appointments
+$appointments = get_appointment_bookings($cal_prefix, $token, $total_days);
+if ($appointments) {
+	if (!$new_database) {
+		clear_appointment_bookings($db, $total_days);
+	}
+	set_appointment_bookings($db, $appointments);
+}
+
 
 echo 'All gathered!';
 
@@ -279,6 +295,9 @@ function clear_dates($db, $table, $future_days) {
 		die($error->getMessage());
 	}
 }
+function clear_appointment_bookings($db, $future_days) {
+	clear_dates($db, 'bookings', $future_days);
+}
 
 // Retrieve the space bookings - this includes public bookings, and bookings associated to events
 function get_bookings(string $prefix, string $token, int $days = 1) {
@@ -294,7 +313,7 @@ function get_bookings(string $prefix, string $token, int $days = 1) {
 	return $bookings ?: false;
 }
 /* private */ function get_all_bookings(string $prefix, string $token, int $days = 1, int $page = 1) {
-	$include_remote = INCLUDE_REMOTE_BOOKINGS ? 1 : 0;
+	$include_remote    = INCLUDE_REMOTE_BOOKINGS    ? 1 : 0;
 	$include_cancelled = INCLUDE_CANCELLED_BOOKINGS ? 1 : 0;
 	$include_tentative = INCLUDE_TENTATIVE_BOOKINGS ? 1 : 0;
 	$include_answers   = GET_FORM_ANSWERS           ? 1 : 0;
@@ -706,6 +725,89 @@ function set_calendars($db, $cals) {
 	}
 }
 
+// Retrieve all of the available calendars and their details
+function get_appointment_accounts($prefix, $token) {
+	$result = call_api($prefix, $token, "/1.1/appointments/users");
+	return $result;
+}
+function set_appointment_accounts($db, $accounts) {
+	if (isset($accounts) && count($accounts) > 0) {
+		$db->beginTransaction();
+		foreach ($accounts as $account) {
+			$vals = [];
+			$vals['id']        = (int) $account->id;
+			$vals['firstname'] = $account->first_name;
+			$vals['lastname']  = $account->last_name;
+			$vals['email']     = $account->email;
+
+			$keys        = array_keys($vals);
+			$fields      = '`'.implode('`, `',$keys).'`';
+			$placeholder = ':' . implode(', :', $keys);
+
+			$sth = $db->prepare("INSERT INTO `appointment_accounts` ({$fields}) VALUES ({$placeholder})");
+			$sth->execute(array_values($vals));
+			$arr = $sth->errorInfo();
+		}
+		try {
+			$db->commit();
+		} catch (Exception $ex) {
+			if ($db->inTransaction()) {
+				$db->rollback();
+			}
+		}
+	}
+}
+
+// Retrieve all of the available calendars and their details
+function get_appointment_bookings($prefix, $token, $days = 0) {
+	$include_cancelled = INCLUDE_CANCELLED_BOOKINGS ? 1 : 0;
+	
+	$result = call_api($prefix, $token, "/1.1/appointments/bookings?include_cancellations={$include_cancelled}&limit=500&days={$days}");
+	return $result;
+}
+function set_appointment_bookings($db, $appointments) {
+	if (isset($appointments) && count($appointments) > 0) {
+		$db->beginTransaction();
+		foreach ($appointments as $appointment) {
+			$vals = [];
+			$vals['id']           = (int) $appointment->id;
+			$vals['start']        = strtotime($appointment->fromDate);
+			$vals['end']          = strtotime($appointment->toDate);
+			$vals['firstname']    = $appointment->firstName;
+			$vals['lastname']     = $appointment->lastName;
+			$vals['email']        = $appointment->email;
+			$vals['account']      = $appointment->account;
+			$vals['smsWanted']    = (int) $appointment->smsWanted;
+			$vals['phoneNumber']  = $appointment->phoneNumber;
+			$vals['userId']       = $appointment->userId;
+			$vals['location']     = $appointment->location;
+			$vals['locationId']   = $appointment->locationId;
+			$vals['groupName']    = $appointment->group;
+			$vals['groupId']      = $appointment->groupId;
+			$vals['categoryId']   = $appointment->categoryId;
+			$vals['directions']   = $appointment->directions;
+			$vals['cancelled']    = (int) $appointment->cancelled;
+			$vals['userShowedUp'] = $appointment->userShowedUp;
+			$vals['answers']      = isset($appointment->answers) && !empty($appointment->answers) ? json_encode($appointment->answers) : null;
+
+			$keys        = array_keys($vals);
+			$fields      = '`'.implode('`, `',$keys).'`';
+			$placeholder = ':' . implode(', :', $keys);
+
+			$sth = $db->prepare("INSERT INTO `appointment_bookings` ({$fields}) VALUES ({$placeholder})");
+			$sth->execute(array_values($vals));
+			$arr = $sth->errorInfo();
+		}
+		try {
+			$db->commit();
+		} catch (Exception $ex) {
+			if ($db->inTransaction()) {
+				$db->rollback();
+			}
+		}
+	}
+}
+
 // Retrieve a valid "bearer" auth token
 function get_authentication($prefix, int $id = null, string $secret = null) {
 	if (file_exists(TOKEN_FILE) && (time() < (filemtime(TOKEN_FILE) + (TOKEN_LIFETIME-1)*60))) {
@@ -769,7 +871,6 @@ function call_api(string $prefix, string $token, string $endpoint = null) {
 
 	$result = curl_exec($curl);
 	$err = curl_error($curl);
-	curl_close($curl);
 
 	if ($err) {
 		# echo "cURL Error #:" . $err;
