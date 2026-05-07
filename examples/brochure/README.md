@@ -3,9 +3,11 @@
 mPDF is a PHP library used in the generation of PDFs. This project uses an ever-so-slightly modified version of that library to generate a PDF brochure of
 library events, customized to the interests of your patrons. A date range can be chosen (default is set to the current week), and it can also be filtered
 by audience type, event categories, and location (space). This is the configuration that is provided in the example, but it could be extended to use any
-available attributes as provided in the SQLite database that this project maintains.
+available attributes as provided in the SQLite database that this project maintains. The [mPDF](https://mpdf.github.io/) open source library was used to generate the PDF documents.
 
 An example HTML form is provided so that, once this repository's main `config.php` file is setup appropriately and the SQLite database is primed, this can be tested immediately.
+
+**NOTE: The generated PDF is _not_ fully accessible for online use (print should be fine). Open source PDF libraries for PHP cannot currently generate PDF/UA (ISO 14289) compatible PDF documents. This project is still a good showcase of what is possible using the LibCal API.**
 
 The following values can be customized without needing to understand PHP:
 
