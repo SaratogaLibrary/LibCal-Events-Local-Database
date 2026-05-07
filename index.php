@@ -296,7 +296,7 @@ function clear_dates($db, $table, $future_days) {
 	}
 }
 function clear_appointment_bookings($db, $future_days) {
-	clear_dates($db, 'bookings', $future_days);
+	clear_dates($db, 'appointment_bookings', $future_days);
 }
 
 // Retrieve the space bookings - this includes public bookings, and bookings associated to events
