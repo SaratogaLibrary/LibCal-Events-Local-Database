@@ -48,6 +48,7 @@ CREATE TABLE events (
 	calendar                   TEXT,
 	color                      TEXT NOT NULL DEFAULT '#000000' CHECK(length(color) == 7),
 	image                      TEXT,
+	image_alt                  TEXT,
 	geo_id                     TEXT,                    -- https://www.google.com/maps/place/?q=place_id:<place_id>
 	geo_lat                    TEXT,
 	geo_long                   TEXT,

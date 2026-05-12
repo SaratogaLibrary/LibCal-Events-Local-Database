@@ -546,6 +546,7 @@ function set_events($db, $events, $calendars = null) {
 			$vals['calendar'] = $event->calendar->name;
 			$vals['color'] = $event->color;
 			$vals['image'] = isset($event->featured_image) && !empty($event->featured_image) ? $event->featured_image : null;
+			$vals['image_alt'] = isset($event->featured_image_alt_text) && !empty($event->featured_image_alt_text) ? $event->featured_image_alt_text : null;
 			$vals['geo_id'] = isset($event->geolocation->{'place-id'}) && !empty($event->geolocation->{'place-id'}) ? $event->geolocation->{'place-id'} : null;
 			$vals['geo_lat'] = isset($event->geolocation->latitude) && !empty($event->geolocation->latitude) ? $event->geolocation->latitude : null;
 			$vals['geo_long'] = isset($event->geolocation->longitude) && !empty($event->geolocation->longitude) ? $event->geolocation->longitude : null;
