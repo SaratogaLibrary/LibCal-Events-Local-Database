@@ -10,7 +10,7 @@ This example project is based on that effort, but stripped and decoupled from ou
 
 - Does not auto-reload the page. This could be fixed fairly easily, but we chose to take advantage of the [Fully Kiosk Browser](https://www.fully-kiosk.com/) Lockdown tool (Android) to far more easily configure how to manage screen refresh, resetting of the display, screensavers, and similar functionality. This is a very powerful and very inexpensive app that makes managing tablet (kiosk-style) displays extremely easy.
   
-  - Cannot book a space. The API does offer booking, but it's too configurable to know how each library would want to handle this scenario.
+- Cannot book a space. The API does offer booking, but it's too configurable to know how each library would want to handle this scenario.
   
   - Since all code is included, libraries are free to further customize the templates to handle this, however, such as embedding a QR code that points to the booking form (as Springshare does).
 
