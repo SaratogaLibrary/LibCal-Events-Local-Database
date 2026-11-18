@@ -16,6 +16,14 @@ To get some creative ideas started, here are a few projects that can take advant
    (**NOTE:** The generated PDF is _not_ fully accessible for online use [printed documents should be fine]. PDF libraries for PHP cannot currently generate PDF/UA (ISO 14289) compatible PDF documents. This project is still a good showcase of what is possible using the LibCal API.)
 6. [Room Setup Report](room-setup-report/)  
    It is often convenient to be able to provide a quick view (optionally printable) of what setup and equipment an event may require. Although limited by the capabilities of the API, this example can pull all events and public bookings from the Events and Spaces modules, and attach any equipment requested that is directly associated to each item. Room setup is pulled from the Event's "Event Note" field. Options provided are the start and end date, the output format (HTML or DOCX), and if the output should show *all* rooms, or just those that have equipment/setup needs. This uses the [PhpOffice/PhpWord](https://github.com/PHPOffice/PHPWord) open source project to generate the Word Documents.
+7. [Room Tablet](room-tablet)  
+   Springshare offers their own simple solution for a room usage interface for tablets. This was being built before they released theirs, but needed a few more
+   API options to make it work reasonably well. Those were introduced, and so the work for a generic version was completed to be shared with all. This project
+   example slightly changes the interface when used in portrait versus landscape mode, so choose your preference. Unlike Springshare's offering, searching a
+   specific date for room availability is not currently included (though could be extended). What is offered is a thoroughly-tested interface that _should_ not
+   expose any rendering bugs that cause content to be hidden, cut off, or inaccessible - and can provide white-labelling for your own library. _Extremely_ small
+   displays may exhibit small issues, but could probably be fixed with either font size changes in the included CSS, or an adjustment of the layouts (or just
+   choosing portrait instead of landscape). Enjoy!
 
 ## Contributing
 
