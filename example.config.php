@@ -15,7 +15,7 @@ const TOKEN_LIFETIME      = 60;           // minutes until invalid
 const TOKEN_FILE          = 'token';      // local file to store the API token
 const DATABASE_FILE       = __DIR__ . DIRECTORY_SEPARATOR . 'db.sqlite3'; // local file to store the SQLite database
 const DB_STRING_DELIMITER = '|';          // Seperates strings in combined TEXT fields
-const PDO_OPTIONS         = [PDO::ATTR_TIMEOUT => 0, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
+const PDO_OPTIONS         = [PDO::ATTR_TIMEOUT => 5, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
 
 // Event specific API settings
 const GET_EVENT_NOTES    = true;
