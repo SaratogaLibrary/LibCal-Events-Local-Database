@@ -4,6 +4,8 @@
 /token
 /db.sqlite3
 /examples/json-providers/categories.php
+/db.sqlite3-shm
+/db.sqlite3-wal
 
 # IDE and editor specific files #
 #################################

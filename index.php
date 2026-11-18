@@ -505,6 +505,7 @@ function set_events($db, $events, $calendars = null) {
 			$vals['allday'] = (int) $event->allday;
 			$vals['multiday'] = date('Ymd', strtotime($event->end)) > date('Ymd', strtotime($event->start)) ? 1 : 0;
 			$vals['private'] = array_key_exists($event->calendar->id, $lookup) ? $lookup[$event->calendar->id] : 0;
+			$vals['cancelled'] = isset($event->cancelled) && (int) $event->cancelled == 1 ? 1 : 0;
 			$vals['start'] = strtotime($event->start);
 			$vals['end'] = strtotime($event->end);
 			$vals['setup'] = $event->setup_time;
@@ -515,7 +516,7 @@ function set_events($db, $events, $calendars = null) {
 				$vals['event_note'] = $event->event_note ?? null;
 			}
 			if (GET_INTERNAL_NOTES) {
-				$vals['internal_notes'] = (isset($event->internal_noteS) && count($event->internal_notes)) ? serialize($event->internal_notes) : null;
+				$vals['internal_notes'] = (isset($event->internal_notes) && count($event->internal_notes)) ? serialize($event->internal_notes) : null;
 			}
 			$vals['url'] = $event->url->public;
 			$vals['admin_url'] = $event->url->admin;
@@ -541,6 +542,7 @@ function set_events($db, $events, $calendars = null) {
 			$vals['internal_tags'] = (isset($event->internal_tags) && count($event->internal_tags)) ? implode(DB_STRING_DELIMITER, array_map(function ($a) { return $a->name; }, $event->internal_tags)) : null;
 			$vals['owner_id'] = $event->owner->id;
 			$vals['owner'] = $event->owner->name;
+			$vals['owner_email'] = $event->owner->email;
 			$vals['presenter'] = isset($event->presenter) && !empty($event->presenter) ? $event->presenter : null;
 			$vals['cal_id'] = $event->calendar->id;
 			$vals['calendar'] = $event->calendar->name;
@@ -550,9 +552,9 @@ function set_events($db, $events, $calendars = null) {
 			$vals['geo_id'] = isset($event->geolocation->{'place-id'}) && !empty($event->geolocation->{'place-id'}) ? $event->geolocation->{'place-id'} : null;
 			$vals['geo_lat'] = isset($event->geolocation->latitude) && !empty($event->geolocation->latitude) ? $event->geolocation->latitude : null;
 			$vals['geo_long'] = isset($event->geolocation->longitude) && !empty($event->geolocation->longitude) ? $event->geolocation->longitude : null;
-			$vals['cost'] = $event->registration_cost;
 			$vals['registration'] = (isset($event->registration) && $event->registration) ? 1 : 0;
 			$vals['registration_form_id'] = $event->registration_form_id ?? null;
+			$vals['registration_max_guests'] = $event->registration_max_guests;
 			if (isset($event->registration_series_linked)) {
 				$vals['registration_linked'] = $event->registration_series_linked ? 1 : 0;
 			} else {
@@ -571,6 +573,8 @@ function set_events($db, $events, $calendars = null) {
 			}
 			$vals['registration_open'] = isset($event->has_registration_opened) && isset($event->has_registration_closed) ? (int) ($event->has_registration_opened && !$event->has_registration_closed) : 0;
 			$vals['registration_closed'] = isset($event->has_registration_opened) && isset($event->has_registration_closed) ? (int) $event->has_registration_closed : 0;
+			$vals['registration_open_at'] = isset($event->registration_open_at) ? strtotime($event->registration_open_at) : null;
+			$vals['registration_close_at'] = isset($event->registration_close_at) ? strtotime($event->registration_close_at) : null;
 			$vals['registration_cost'] = $event->registration_cost;
 			$vals['attendance_physical'] = isset($event->attendance->in_person) && $event->attendance->in_person ? $event->attendance->in_person : null;
 			$vals['attendance_online'] = isset($event->attendance->online) && $event->attendance->online ? $event->attendance->online : null;
@@ -625,6 +629,7 @@ function set_space_details($db, $spaces_data) {
 				$vals['description']                = $space->description;
 				$vals['termsAndConditions']         = $space->termsAndConditions;
 				$vals['image']                      = $space->image;
+				$vals['image_alt']                  = $space->image_alt_text;
 				$vals['capacity']                   = (int) $space->capacity;
 				$vals['formId']                     = (int) $space->formid;
 				$vals['isBookableAsWhole']          = (int) $space->isBookableAsWhole;
